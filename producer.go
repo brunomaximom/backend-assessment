@@ -30,5 +30,7 @@ func main() {
 		panic(err)
 	}
 	data := time.Now().String()
+	
+	//Cria ativação no banco
 	db.Exec("INSERT INTO t10.ativacao (origem, destino, data) VALUES ("+os.Args[1]+", "+os.Args[2]+", '"+data+"');")
 }
