@@ -28,5 +28,5 @@ func main() {
 	if err := db.Ping(ctx); err != nil {
 		panic(err)
 	}
-	db.Exec("UPDATE t10.ativacao SET opcode="+os.Args[2]+" WHERE id="+os.Args[1]+";")
+	db.Exec("UPDATE t10.ativacao SET opcode="+os.Args[1]+" WHERE id="+os.Args[2]+";")
 }
