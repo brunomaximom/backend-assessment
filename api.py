@@ -1,4 +1,4 @@
-import os, json, psycopg2
+import os, json, psycopg2, subprocess
 from flask import Flask, request, jsonify
 from psycopg2.extras import RealDictCursor
 from flask_jwt_extended import (
@@ -76,8 +76,8 @@ def cancelar():
         string: Mensagem de evento realizado
     """
     id = request.args.get('id')
-    os.system("go run consumer.go 0 "+id)
-    return "Ativação cancelada"
+    out = subprocess.run(["go", "run", "consumer.go", "0", "id"], stdout=subprocess.PIPE)
+    return out.stdout.decode('utf-8')
 
 @app.route('/visualizar')
 def visualizar():
@@ -100,8 +100,12 @@ def avaliar():
     """
     opcode = request.args.get('opcode')
     id = request.args.get('id')
-    os.system("go run consumer.go "+opcode+" "+id)
-    if opcode == 1:
+    out = subprocess.run(["go", "run", "consumer.go", opcode, "id"], stdout=subprocess.PIPE)
+    print(out.stdout.decode('utf-8'))
+    
+    if opcode == '1':
         return "Ativação recusada pelo super usuário"
-    if opcode == 2:
+    elif opcode == '2':
         return "Ativação aprovada pelo super usuário"
+    else:
+        return "Um erro ocorreu. Conferir se foi passado o opcode correto."

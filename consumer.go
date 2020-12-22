@@ -38,8 +38,11 @@ func main() {
 	2: aprovada
 	*/
 	db.Exec("UPDATE t10.ativacao SET opcode="+os.Args[1]+" WHERE id="+os.Args[2]+";")
+	if os.Args[1] == "0"{
+		fmt.Printf("Ativação %s cancelada.", os.Args[2])
+	}
 	if os.Args[1] == "1"{
-		out, _ := exec.Command("go", "run", "mailServer.go", "cancelled").Output()
+		out, _ := exec.Command("go", "run", "mailServer.go", "denied").Output()
 		fmt.Printf("%s", out)
 	}
 	if os.Args[1] == "2"{
