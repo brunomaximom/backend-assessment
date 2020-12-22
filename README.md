@@ -1,114 +1,30 @@
-Backend Assessment
+# Como o problema foi entendido
+Haveria 30 empresas parceiras com um número próprio de usuários cada uma - coloquei 200 para cada uma totalizando 6000 usuários no banco. A origem e o destino do evento da ativação seria respectivamente o usuário logado que está solicitando a ativação e o destino que seria uma das 30 empresas.
 
-Olá! 🖖🏽
+# Como a solução foi implementada
+Abstraí informações como valor da compra ou produto para simplificar a solução e numerei ambos os cpfs (chave primaria da tabela usuario) e senhas dos usuários de 1 a 6000 para facilitar o teste da solução, bem como numerei os cnpjs (chave primaria da tabela empresa) de 1 a 30. A data do evento foi obtida por time.Now() no producer.go. Também para facilitar os testes manuais, todas as requisições são usando método GET.
 
-Nossa intenção é, através deste (breve) desafio, avaliar a habilidade técnica percebida ao empregar e desenvolver uma solução para o problema aqui descrito.
+## Motivações
+Quis criar parte da solução em Go e parte em Python (utilizando o Flask) pelos seguintes motivos:
+1. treinar a sintaxe de Go;
+2. reduzir o código Python para apenas receber as requisições e realizar a autenticação, eventos como recusar/aprovar, criar e cancelar a solicitação seriam realizados fora da API propositalmente;
+3. conhecer um ORM para Go;
+4. facilitar a execução em paralelo através da API de várias programas em Go dependendo da quantidade de solicitações;
 
-## Domínio Problema
+## O processo de implementação
+A implementação foi realizada de baixo pra cima, começando do mailServer.go que apenas printa uma mensagem dizendo que um e-mail foi enviado, posteriormente escrevi o produtor e consumidor sucedido pela API e, por fim, implementando a autenticação na API. Não consegui fazer funcionar o pacote flask-jwt instalado com o pip (e acabei perdendo muito tempo tentando), mas consegui utilizar o flask-jwt-extended com sucesso.
 
-Uma instituição financeira contratou os serviços da T10 buscando maior **agilidade dos dados** através da metrificação de processos que, até então, não eram _observados_ (apropriadamente). Um dos processos é a solicitação do produto débito automático de empresas parceiras.
-A operação é realizada manualmente e vai ser automatizada por este serviço, que vai permitir que outros serviços consumam, de forma livre, de seus eventos operacionais.
+## O banco de dados
+O banco de dados usado foi só o PostgreSQL, utilizando a role 'postgres' e database 'postgres', mas com um schema de nome 't10'. O acesso ao banco é sem senha e a configuração para acessá-lo sem senha está em pg_hba.conf:
+local   all             postgres                                trust
+local   all             all                                     trust
+host    all             all             127.0.0.1/32            trust
+host    all             all             ::1/128                 trust
 
-# Escopo
-
-## Casos de Uso
-
-1. Autenticação e acesso a plataforma
-
-Um usuário autenticado,
-
-2. solicita uma ativação de débito automático
-3. cancela uma solicitação de ativação
-4. aprova uma solicitação de ativação
-5. rejeita uma solicitação de ativação
-6. visualiza uma solicitação
+# Como executar
+## Dependências
 
 
-Diagrama do [modelo de eventos](img/model.jpg).
-
-Observações **importantes** sobre o modelo:
-
-  - É uma representação do domínio _exclusivamente_.
-
-  - Não é mandatório ser modelado usando CQRS nem event-driven.
-
-  - Não é mandatório implementar o EmailServer
-
-## Requisitos
-
-Especifica o contexto em que a aplicação será operacionalizada
-
-### Não funcionais
-
-1. 30 empresas parceiras
-1. 5000 usuários simultâneos
-1. 100 reqs/s 
-
-### Funcionais
-
-#### Tecnologias
-
-- implementação: `golang | elixir | python`
-- armazenamento: `postgres | mongodb`
-- **não-mandatório** broker: `kafka | rabbitmq`
-
-#### Protocolos
-
-- pontos de entrada: `http`
-- autenticação: `simple jwt`
-
-#### Padrões
-
-Bonus points:
-
-- arquitetural: `cqrs & hexagonal`
-- design: `ddd & solid`
-- message bus as stream
-
-### 3rd parties
-
-O uso de bibliotecas externas é **livre**.
-
-### Deployment
-
-A forma como a aplicação será disponibilizada é **livre**. Fica a critério do candidato, por exemplo, usar algum PaaS a fim de reduzir a complexidade bem como utilizar receitas prontas através de ferramentas de automatização e.g. `ansible+dockercompose`.
-
-No entanto, é esperado bom senso na documentação caso sejam usadas soluções @ `localhost`.
-
-# Entrega
-
-A _Release_ 0.1 🚀 consiste na implementação de um servidor web que implementa os casos de uso listados acima respeitando os requisitos funcionais e não funcionais. Fica a critério do desenvolvedor como os testes serão escritos, os scripts de _data migration_, os _schemas_ de entrada e saída da api e todas as outras definições que não foram listadas neste documento.
-
-## Avaliação
-
-Critérios ordenados por ordem de peso decrescente:
-
-1. Correção (_correctness_) da solução
-
-   - a fim de solucionar o [domínio-problema](#domínio-problema)
-   - a fim de cumprir os [casos de uso](#casos-de-uso)
-   - ao implementar os [requisitos](#requisitos) especificados
-
-1. Testes
-1. Organização, documentação e clareza na estruturação do projeto
-1. Estilo, legibilidade e simplicidade no código
-1. Escolhas e uso de 3rd parties
-1. Padrões de segurança
-
-#### Bonus points 🏆
-
-1. Teste de stress
-1. Boas práticas na modelagem e armazenamento de dados
-
-## Eliminatórios
-
-1. Copiar ou "se inspirar" em código alheio é _veementemente_ vetado ✋
-
-## Submissão
-
-Ao finalizar a implementação, o diretório da solução pode ser submetido de duas formas:
-
-1. através de um _fork_ e um _pull request_ neste repositório ou
-1. por email, compactado, para `it@t10.digital` com o assunto `Backend Assessment`
-
-Feito 🤘
+# TODO
+Faltou criar os casos de teste
+Faltou testar se o requisito não-funcional de 10reqs/s é cumprido
