@@ -1,4 +1,4 @@
-import os, json, psycopg2, subprocess
+import os, json, psycopg2, subprocess, requests
 from flask import Flask, request, jsonify
 from psycopg2.extras import RealDictCursor
 from flask_jwt_extended import (
@@ -9,6 +9,7 @@ from flask_jwt_extended import (
 app = Flask(__name__)
 conn = psycopg2.connect("host=localhost port=5432 dbname=postgres user=postgres password=eu")
 cur = conn.cursor(cursor_factory=RealDictCursor)
+access_token = None
 
 # Setup the Flask-JWT-Extended extension
 app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
@@ -25,6 +26,7 @@ def login():
         json: retorna um token
     """
     global cur
+    global access_token
     usuario = request.args.get('username')
     senha = request.args.get('password')
     cur.execute("SELECT nome FROM t10.usuario WHERE nome = %s", (usuario,))
@@ -54,7 +56,7 @@ def protected():
 
 @app.route('/')
 def home():
-    return 'Rotas diponíveis: \n/cancelar\n/solicitar\n/avaliar'
+    return 'Rotas diponíveis: \n/cancelar\n/solicitar\n/avaliar\n/login'
 
 @app.route('/solicitar')
 def solicitar():
@@ -63,6 +65,12 @@ def solicitar():
     Returns:
         string: mensagem de sucesso.
     """
+    global access_token
+    if access_token == None:
+        return "Usuário não autenticado"
+    else:
+        r = requests.get('http://localhost:5000/protected', headers="Authorization: Bearer "+access_token).content
+
     origem = request.args.get('origem')
     destino = request.args.get('destino')
     os.system("go run producer.go "+origem+" "+destino)
@@ -75,6 +83,12 @@ def cancelar():
     Returns:
         string: Mensagem de evento realizado
     """
+    global access_token
+    if access_token == None:
+        return "Usuário não autenticado"
+    else:
+        r = requests.get('http://localhost:5000/protected', headers="Authorization: Bearer "+access_token).content
+        
     id = request.args.get('id')
     out = subprocess.run(["go", "run", "consumer.go", "0", "id"], stdout=subprocess.PIPE)
     return out.stdout.decode('utf-8')
@@ -86,6 +100,12 @@ def visualizar():
     Returns:
         json: Registro desejado em formato json
     """
+    global access_token
+    if access_token == None:
+        return "Usuário não autenticado"
+    else:
+        r = requests.get('http://localhost:5000/protected', headers="Authorization: Bearer "+access_token).content
+
     id = request.args.get('id')
     global cur
     cur.execute("SELECT * FROM t10.ativacao WHERE id="+id+";")
@@ -98,14 +118,23 @@ def avaliar():
     Returns:
         string: Retorna mensagem de recusada ou aprovada a solicitação
     """
-    opcode = request.args.get('opcode')
-    id = request.args.get('id')
-    out = subprocess.run(["go", "run", "consumer.go", opcode, "id"], stdout=subprocess.PIPE)
-    print(out.stdout.decode('utf-8'))
-    
-    if opcode == '1':
-        return "Ativação recusada pelo super usuário"
-    elif opcode == '2':
-        return "Ativação aprovada pelo super usuário"
+    global access_token
+    if access_token == None:
+        return "Usuário não autenticado"
     else:
-        return "Um erro ocorreu. Conferir se foi passado o opcode correto."
+        r = requests.get('http://localhost:5000/protected', headers="Authorization: Bearer "+access_token).content
+
+    if r['logged_in_as'] == 'usuario1':         #usuario1 é o super-usuário
+        opcode = request.args.get('opcode')
+        id = request.args.get('id')
+        out = subprocess.run(["go", "run", "consumer.go", opcode, "id"], stdout=subprocess.PIPE)
+        print(out.stdout.decode('utf-8'))
+
+        if opcode == '1':
+            return "Ativação recusada pelo super usuário"
+        elif opcode == '2':
+            return "Ativação aprovada pelo super usuário"
+        else:
+            return "Um erro ocorreu. Conferir se foi passado o opcode correto."
+    else:
+        return "Voce não é super-usuário"
