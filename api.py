@@ -1,4 +1,5 @@
 import os, json, psycopg2, subprocess, requests
+from ast import literal_eval
 from flask import Flask, request, jsonify
 from psycopg2.extras import RealDictCursor
 from flask_jwt_extended import (
@@ -7,7 +8,7 @@ from flask_jwt_extended import (
 )
 
 app = Flask(__name__)
-conn = psycopg2.connect("host=localhost port=5432 dbname=postgres user=postgres password=eu")
+conn = psycopg2.connect("host=localhost port=5432 dbname=postgres user=postgres")
 cur = conn.cursor(cursor_factory=RealDictCursor)
 access_token = None
 
@@ -29,16 +30,14 @@ def login():
     global access_token
     usuario = request.args.get('username')
     senha = request.args.get('password')
-    cur.execute("SELECT nome FROM t10.usuario WHERE nome = %s", (usuario,))
+    cur.execute("SELECT nome FROM t10.usuario WHERE nome = %s and senha = %s", (usuario,senha,))
     usuario_existe = cur.fetchone()
-    cur.execute("SELECT senha FROM t10.usuario WHERE senha = %s", (senha,))
-    senha_existe = cur.fetchone()
     if not usuario:
         return jsonify({"msg": "Missing username parameter"}), 400
     if not senha:
         return jsonify({"msg": "Missing password parameter"}), 400
 
-    if usuario_existe == None or senha_existe == None:
+    if usuario_existe == None:
         return jsonify({"msg": "Bad username or password"}), 401
 
     # Identity can be any data that is json serializable
@@ -69,11 +68,15 @@ def solicitar():
     if access_token == None:
         return "Usuário não autenticado"
     else:
-        r = requests.get('http://localhost:5000/protected', headers="Authorization: Bearer "+access_token).content
+        header = {"Authorization": "Bearer "+access_token}
+        r = requests.get('http://localhost:5000/protected', headers=header).content.decode('utf-8')
+        r = literal_eval(r)
 
-    origem = request.args.get('origem')
+    cur.execute("SELECT cpf FROM t10.usuario WHERE nome = %s", (r['logged_in_as'],))
+    origem = dict(cur.fetchone())
+    origem = origem['cpf']
     destino = request.args.get('destino')
-    os.system("go run producer.go "+origem+" "+destino)
+    os.system("go run producer.go "+str(origem)+" "+destino)
     return "Ativação solicitada com sucesso"
 
 @app.route('/cancelar')
@@ -87,7 +90,9 @@ def cancelar():
     if access_token == None:
         return "Usuário não autenticado"
     else:
-        r = requests.get('http://localhost:5000/protected', headers="Authorization: Bearer "+access_token).content
+        header = {"Authorization": "Bearer "+access_token}
+        r = requests.get('http://localhost:5000/protected', headers=header).content.decode('utf-8')
+        r = literal_eval(r)
         
     id = request.args.get('id')
     out = subprocess.run(["go", "run", "consumer.go", "0", "id"], stdout=subprocess.PIPE)
@@ -104,7 +109,9 @@ def visualizar():
     if access_token == None:
         return "Usuário não autenticado"
     else:
-        r = requests.get('http://localhost:5000/protected', headers="Authorization: Bearer "+access_token).content
+        header = {"Authorization": "Bearer "+access_token}
+        r = requests.get('http://localhost:5000/protected', headers=header).content.decode('utf-8')
+        r = literal_eval(r)
 
     id = request.args.get('id')
     global cur
@@ -122,11 +129,14 @@ def avaliar():
     if access_token == None:
         return "Usuário não autenticado"
     else:
-        r = requests.get('http://localhost:5000/protected', headers="Authorization: Bearer "+access_token).content
+        header = {"Authorization": "Bearer "+access_token}
+        r = requests.get('http://localhost:5000/protected', headers=header).content.decode('utf-8')
+        r = literal_eval(r)
 
     if r['logged_in_as'] == 'usuario1':         #usuario1 é o super-usuário
         opcode = request.args.get('opcode')
         id = request.args.get('id')
+        
         out = subprocess.run(["go", "run", "consumer.go", opcode, "id"], stdout=subprocess.PIPE)
         print(out.stdout.decode('utf-8'))
 

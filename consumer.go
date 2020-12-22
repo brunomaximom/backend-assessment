@@ -22,7 +22,6 @@ func main() {
 	db := pg.Connect(&pg.Options{
 		Addr: ":5432",
 		User: "postgres",
-		Password: "eu",
 		Database: "postgres",
 	})
 	defer db.Close()
@@ -33,6 +32,7 @@ func main() {
 	}
 	/*
 	Atualiza opcode da ativação dependendo do status
+	null: em espera
 	0: cancelada
 	1: recusada
 	2: aprovada
