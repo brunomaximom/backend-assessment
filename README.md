@@ -46,4 +46,4 @@ Seguir as instruções de instalação do ORM go-pg em https://github.com/go-pg/
 
 # TODO
 1. Faltou criar os casos de teste;
-2. Faltou testar se o requisito não-funcional de 10reqs/s é cumprido;
+2. Faltou testar se o requisito não-funcional de 100reqs/s é cumprido;
