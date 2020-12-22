@@ -12,37 +12,37 @@ Quis criar parte da solução em Go e parte em Python (utilizando o Flask) pelos
 4. facilitar a execução em paralelo através da API de várias programas em Go dependendo da quantidade de solicitações;
 
 ## O processo de implementação
-A implementação foi realizada de baixo pra cima, começando do mailServer.go que apenas printa uma mensagem dizendo que um e-mail foi enviado, posteriormente escrevi o produtor e consumidor sucedido pela API e, por fim, implementando a autenticação na API. Não consegui fazer funcionar o pacote flask-jwt instalado com o pip (e acabei perdendo muito tempo tentando), mas consegui utilizar o flask-jwt-extended com sucesso. Para utilizar este pacote, reaproveitei o código de exemplo do próprio site https://flask-jwt-extended.readthedocs.io/en/stable/basic_usage/
+A implementação foi realizada de baixo pra cima, começando do mailServer.go que apenas printa uma mensagem dizendo que um e-mail foi enviado, posteriormente escrevi o produtor e consumidor sucedido pela API e, por fim, implementando a autenticação na API. Não consegui fazer funcionar o pacote flask-jwt instalado com o pip (e acabei perdendo muito tempo tentando), mas consegui utilizar o flask-jwt-extended com sucesso. Para utilizar este pacote, reaproveitei o código de exemplo do próprio site https://flask-jwt-extended.readthedocs.io/en/stable/basic_usage/  
 
 ## O banco de dados
 O banco de dados usado foi só o PostgreSQL, utilizando a role 'postgres' e database 'postgres', mas com um schema de nome 't10'. O acesso ao banco é sem senha e a configuração para acessá-lo sem senha está em pg_hba.conf:
-1. local   all             postgres                                trust
-2. local   all             all                                     trust
-3. host    all             all             127.0.0.1/32            trust
-4. host    all             all             ::1/128                 trust
+1. local   all             postgres                                trust  
+2. local   all             all                                     trust  
+3. host    all             all             127.0.0.1/32            trust  
+4. host    all             all             ::1/128                 trust  
 
-Para ter uma ideia de como ele é acessado, olhe o script que usei para populá-lo nomeado como populaBanco.sh
+Para ter uma ideia de como ele é acessado, olhe o script que usei para populá-lo nomeado como populaBanco.sh  
 
 ## Virtualenv
-A API roda em uma venv com todas as dependências satisfeitas. Caso tenha problemas com a venv importada no repositório, crie uma do zero com:
-```$ python3 -m venv backend-assessment```
-Todos os códigos estão no diretório raíz da venv, ou seja, em backend-assessment.
+A API roda em uma venv com todas as dependências satisfeitas. Caso tenha problemas com a venv importada no repositório, crie uma do zero com:  
+```$ python3 -m venv backend-assessment```  
+Todos os códigos estão no diretório raíz da venv, ou seja, em backend-assessment.  
 
 # Como executar
 ## Dependências
-### No sistema operacional (considerando distribuições Linux baseadas em Debian)
-```# apt install golang postgresql python3 python3-dev python3-pip```
-Não esquecer de configurar o /etc/postgresql/11/main/pg_hba.conf de acordo com a configuração citada anteriormente.
+### No sistema operacional (considerando distribuições Linux baseadas em Debian)  
+```# apt install golang postgresql python3 python3-dev python3-pip```  
+Não esquecer de configurar o /etc/postgresql/11/main/pg_hba.conf de acordo com a configuração citada anteriormente.  
 
-### Na virtualenv
-```$ source bin/activate```
-```$ pip install flask flask-jwt-extended psycopg2 requests```
-Tenha certeza que os arquivos api.py, consumer.go, producer.go e mailServer.go estão no mesmo diretório raíz da venv. Então rode o flask:
-```export FLASK_APP=api.py```
-```flask run```
+### Na virtualenv  
+```$ source bin/activate```  
+```$ pip install flask flask-jwt-extended psycopg2 requests```  
+Tenha certeza que os arquivos api.py, consumer.go, producer.go e mailServer.go estão no mesmo diretório raíz da venv. Então rode o flask:  
+```export FLASK_APP=api.py```  
+```flask run```  
 
 ### Golang
-Seguir as instruções de instalação do ORM go-pg em https://github.com/go-pg/pg
+Seguir as instruções de instalação do ORM go-pg em https://github.com/go-pg/pg  
 
 # TODO
 1. Faltou criar os casos de teste;
