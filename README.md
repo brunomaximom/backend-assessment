@@ -22,6 +22,7 @@ O banco de dados usado foi só o PostgreSQL, utilizando a role 'postgres' e data
 4. host    all             all             ::1/128                 trust  
 
 Para ter uma ideia de como ele é acessado, olhe o script que usei para populá-lo nomeado como populaBanco.sh  
+O arquivo de dump do banco também foi adicionado no repositório, nomeado postgres_dump.txt
 
 ## Virtualenv
 A API roda em uma venv com todas as dependências satisfeitas. Caso tenha problemas com a venv importada no repositório, crie uma do zero com:  
