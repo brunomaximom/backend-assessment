@@ -45,6 +45,14 @@ Tenha certeza que os arquivos ```api.py```, ```consumer.go```, ```producer.go```
 ### Golang
 Seguir as instruções de instalação do ORM go-pg em https://github.com/go-pg/pg  
 
+## Usar
+O server roda no padrão do flask: localhost:5000  
+Você pode usar as rotas:  
+```/login?username=<nome>&password=<senha>``` os nomes no banco são nomeados de usuario1 a usuario6000 e a senha de 1 a 6000 também. Super-usuário é o usuario1.
+```/solicitar?destino=<cnpj>``` onde destino é a empresa para qual a operação será realizada, e origem (omitido) é o próprio usuário logado.  
+```/cancelar?id=<id>``` onde id é o id da ativação no banco.  
+```/avaliar?opcode=1&id=11``` onde opcode representa a operação a realizar (recusar ou aprovar) e o id é o id da ativação no banco.  
+
 # TODO
 1. Faltou criar os casos de teste;
 2. Faltou testar se o requisito não-funcional de 100reqs/s é cumprido;
